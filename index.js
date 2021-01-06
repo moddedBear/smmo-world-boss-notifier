@@ -40,7 +40,7 @@ let bosses = [];
 //   }
 // ];
 
-schedule.scheduleJob("0 4 * * 1", function(){
+schedule.scheduleJob("0 5 * * 1", function(){
   getBossList();
 })
 
