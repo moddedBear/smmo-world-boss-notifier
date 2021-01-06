@@ -74,12 +74,12 @@ function scheduleBosses() {
     schedule.scheduleJob(earlyReminder, function(x){
       sendReminder(x, true);
     }.bind(null, boss));
-    console.log(`Early reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toTimeString()}`);
+    console.log(`Early reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toDateString()} ${earlyReminder.toTimeString()}`);
 
     schedule.scheduleJob(reminder, function(x){
       sendReminder(x, false);
     }.bind(null, boss));
-    console.log(`Reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toTimeString()}`);
+    console.log(`Reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toDateString()} ${earlyReminder.toTimeString()}`);
 
     indexCounter++;
   }
