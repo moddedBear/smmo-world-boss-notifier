@@ -84,7 +84,7 @@ function scheduleBosses() {
 
 function sendReminder(boss, isEarly) {
   console.log("Sending reminder");
-  let channel = client.channels.cache.find(channel => channel.name === "smmo-wb-pings");
+  let channel = client.channels.cache.find(channel => channel.name === "smmo-wb-reminders");
   if (isEarly) {
     channel.send(`Level ${boss.level} ${boss.name} is attackable in 5 minutes!`);
   }
