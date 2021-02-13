@@ -1,21 +1,18 @@
 const Discord = require("discord.js");
 const schedule = require('node-schedule');
 const axios = require('axios');
-const fs = require('fs');
+const parse = require('parse-duration');
 
-// The config needs two keys: BOT_TOKEN and SMMO_TOKEN
 const config = require("./config.json");
 
 const client = new Discord.Client();
-const prefix = "!";
-const remindTime = 300; // The number of seconds before each boss that the initial early reminder should be sent
 
 let bosses = [];
 // This commented out declaration of bosses can be used for testing purposes
 // let bosses = [
 //   {
 //     id: 262,
-//     name: 'Slagcreep',
+//     name: 'Monster 1',
 //     avatar: 'bosses/15',
 //     level: 638,
 //     god: 0,
@@ -24,7 +21,7 @@ let bosses = [];
 //     dex: 346,
 //     current_hp: 11002063,
 //     max_hp: 11002063,
-//     enable_time: 1609911480+remindTime+30
+//     enable_time: 1613253849+90
 //   },
 //   {
 //     id: 262,
@@ -37,7 +34,7 @@ let bosses = [];
 //     dex: 346,
 //     current_hp: 11002063,
 //     max_hp: 11002063,
-//     enable_time: 1609911480+remindTime+50
+//     enable_time: 1613253849+110
 //   }
 // ];
 
@@ -66,32 +63,21 @@ function getBossList() {
 
 function scheduleBosses() {
   let indexCounter = 0;
-
   for (boss of bosses) {
-    let earlyReminder = new Date((boss.enable_time - remindTime) * 1000);
-    let reminder = new Date(boss.enable_time * 1000);
-    
-    schedule.scheduleJob(earlyReminder, function(x){
-      sendReminder(x, true);
-    }.bind(null, boss));
-    console.log(`Early reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toDateString()} ${earlyReminder.toTimeString()}`);
-
-    schedule.scheduleJob(reminder, function(x){
-      sendReminder(x, false);
-    }.bind(null, boss));
-    console.log(`Reminder scheduled for Level ${boss.level} ${boss.name} at ${earlyReminder.toDateString()} ${earlyReminder.toTimeString()}`);
-
+    for (remindTime of config.REMINDERS) {
+      let reminder = new Date((boss.enable_time * 1000) - parse(remindTime));
+      schedule.scheduleJob(reminder, function(x, y){
+        sendReminder(x, y);
+      }.bind(null, boss, remindTime));
+      console.log(`Reminder scheduled for Level ${boss.level} ${boss.name} at ${reminder.toDateString()} ${reminder.toTimeString()}`);
+    }
     indexCounter++;
   }
 }
 
-function sendReminder(boss, isEarly) {
+function sendReminder(boss, remindTime) {
+  let isEarly = parse(remindTime) > 0;
   console.log(`Sending ${isEarly ? "early " : ""}reminder for Level ${boss.level} ${boss.name}`);
-  let channel = client.channels.cache.find(channel => channel.name === "smmo-wb-reminders");
-  if (isEarly) {
-    channel.send(`Level ${boss.level} ${boss.name} is attackable in 5 minutes!`);
-  }
-  else {
-    channel.send(`Level ${boss.level} ${boss.name} is attackable now!`);
-  }
+  let channel = client.channels.cache.find(channel => channel.name === config.CHANNEL_NAME);
+  channel.send(`Level ${boss.level} ${boss.name} ${isEarly ? "will be" : "is"} attackable ${isEarly ? `in ${remindTime}` : "now"}!`);
 }
